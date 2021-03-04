@@ -10,61 +10,70 @@ namespace LotrApp
 {
     class Program
     {
-
-        // API Key (Your Token) - add Authorization: Bearer (Your Token) to http request
-
-        private static HttpClient http = new HttpClient();
+        private static readonly HttpClient http = new HttpClient();
 
         static async Task Main(string[] args)
         {
             // url for characters: https://the-one-api.dev/v2/character
             try
             {
-                var config = new ConfigurationBuilder()
-                    .AddUserSecrets<Program>()
-                    .Build();
+                var config = GetConfig();
 
-                var lotrApiKey = config["LotrApiKey"];
+                ApplyApiKey(config);
 
-                http.DefaultRequestHeaders.Add("Authorization", $"Bearer {lotrApiKey}");
+                var charactersApi = new GetLotrCharacters(http);
 
-                CharacterListResponse characterResp = await new GetLotrCharacters(http).GetCharacterList();
+                var charactersResponse = await charactersApi.GetCharacterList();
 
-                foreach (var character in characterResp.Characters.OrderBy(c => c.Name))
-                {
-                    Console.WriteLine(character.Name);
-                }
-                // Root myDeserializedClass = JsonConvert.DeserializeObject<Root>(myJsonResponse); 
+                PrintCharacterList(charactersResponse);
             }
             catch (HttpRequestException e)
             {
                 Console.WriteLine("\nException Caught!");
                 Console.WriteLine("Message :{0} ", e.Message);
             }
-            Console.WriteLine("Hello World!");
+        }
+
+        private static IConfigurationRoot GetConfig()
+        {
+            return new ConfigurationBuilder()
+                .AddUserSecrets<Program>()
+                .Build();
+        }
+
+        private static void ApplyApiKey(IConfigurationRoot config)
+        {
+            var lotrApiKey = config["LotrApiKey"];
+
+            http.DefaultRequestHeaders.Add("Authorization", $"Bearer {lotrApiKey}");
+        }
+
+        private static void PrintCharacterList(CharacterListResponse characterResp)
+        {
+            foreach (var character in characterResp.Characters.OrderBy(c => c.Name))
+            {
+                Console.WriteLine(character.Name);
+            }
         }
 
         public class GetLotrCharacters 
         {
             private HttpClient http; 
+
             public GetLotrCharacters(HttpClient http)
             {
                 this.http = http;
             }
+
             public async Task<CharacterListResponse> GetCharacterList()
             {
+                var responseBody = await http.GetStringAsync("https://the-one-api.dev/v2/character");
 
-                HttpResponseMessage response = await http.GetAsync("https://the-one-api.dev/v2/character");
-                response.EnsureSuccessStatusCode();
-                string respBody = await response.Content.ReadAsStringAsync();
-                //Console.WriteLine(respBody);
-                var characterResp = JsonConvert.DeserializeObject<CharacterListResponse>(respBody);
+                var characterResp = JsonConvert.DeserializeObject<CharacterListResponse>(responseBody);
+
                 return characterResp;
             }
-
         }
-
-
 
         public class Character
         {
