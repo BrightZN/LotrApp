@@ -21,9 +21,6 @@ namespace LotrApp
             try
             {
                 var config = new ConfigurationBuilder()
-                    //.SetBasePath(AppDomain.CurrentDomain.BaseDirectory)
-                    .AddJsonFile("appsettings.json", true, true)
-
                     .AddUserSecrets<Program>()
                     .Build();
 
