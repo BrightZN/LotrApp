@@ -10,7 +10,7 @@ namespace LotrApp
     class Program
     {
 
-        // API Key 91_qKnVWYaMSAPeretYB - add Authorization: Bearer (Your Token) to http request
+        // API Key (Your Token) - add Authorization: Bearer (Your Token) to http request
 
         private static HttpClient http = new HttpClient();
 
