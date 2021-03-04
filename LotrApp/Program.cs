@@ -10,7 +10,7 @@ namespace LotrApp
     class Program
     {
 
-        // API Key 91_qKnVWYaMSAPeretYB - add Authorization: Bearer 91_qKnVWYaMSAPeretYB to http request
+        // API Key 91_qKnVWYaMSAPeretYB - add Authorization: Bearer (Your Token) to http request
 
         private static HttpClient http = new HttpClient();
 
@@ -19,7 +19,7 @@ namespace LotrApp
             // url for characters: https://the-one-api.dev/v2/character
             try
             {
-                http.DefaultRequestHeaders.Add("Authorization", "Bearer 91_qKnVWYaMSAPeretYB");
+                http.DefaultRequestHeaders.Add("Authorization", "Bearer (Your Token)");
 
                 HttpResponseMessage response = await http.GetAsync("https://the-one-api.dev/v2/character");
                 response.EnsureSuccessStatusCode();
