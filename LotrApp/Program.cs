@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using Microsoft.Extensions.Configuration;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -19,14 +20,20 @@ namespace LotrApp
             // url for characters: https://the-one-api.dev/v2/character
             try
             {
-                http.DefaultRequestHeaders.Add("Authorization", "Bearer 91_qKnVWYaMSAPeretYB");
+                var config = new ConfigurationBuilder()
+                    //.SetBasePath(AppDomain.CurrentDomain.BaseDirectory)
+                    .AddJsonFile("appsettings.json", true, true)
 
-                HttpResponseMessage response = await http.GetAsync("https://the-one-api.dev/v2/character");
-                response.EnsureSuccessStatusCode();
-                string respBody = await response.Content.ReadAsStringAsync();
-                //Console.WriteLine(respBody);
-                var characterResp = JsonConvert.DeserializeObject<CharacterListResponse>(respBody);
-                foreach(var character in characterResp.Characters.OrderBy(c => c.Name))
+                    .AddUserSecrets<Program>()
+                    .Build();
+
+                var lotrApiKey = config["LotrApiKey"];
+
+                http.DefaultRequestHeaders.Add("Authorization", $"Bearer {lotrApiKey}");
+
+                CharacterListResponse characterResp = await new GetLotrCharacters(http).GetCharacterList();
+
+                foreach (var character in characterResp.Characters.OrderBy(c => c.Name))
                 {
                     Console.WriteLine(character.Name);
                 }
@@ -39,6 +46,28 @@ namespace LotrApp
             }
             Console.WriteLine("Hello World!");
         }
+
+        public class GetLotrCharacters 
+        {
+            private HttpClient http; 
+            public GetLotrCharacters(HttpClient http)
+            {
+                this.http = http;
+            }
+            public async Task<CharacterListResponse> GetCharacterList()
+            {
+
+                HttpResponseMessage response = await http.GetAsync("https://the-one-api.dev/v2/character");
+                response.EnsureSuccessStatusCode();
+                string respBody = await response.Content.ReadAsStringAsync();
+                //Console.WriteLine(respBody);
+                var characterResp = JsonConvert.DeserializeObject<CharacterListResponse>(respBody);
+                return characterResp;
+            }
+
+        }
+
+
 
         public class Character
         {
